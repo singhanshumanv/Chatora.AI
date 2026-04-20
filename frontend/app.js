@@ -2,6 +2,7 @@
 let currentCards = [];
 let currentView = "input";
 let activeTab = "search";
+let userHadIngredients = false;
 
 // ─── Loading Texts ──────────────────────────────────────────────────────────
 const loadingTexts = [
@@ -139,6 +140,7 @@ function bindInputForm() {
     };
 
     setLoading(true);
+    userHadIngredients = ingredients.length > 0;
     try {
       const data = await apiSuggest(payload);
       currentCards = data.recipes.map((r) => ({
@@ -185,7 +187,7 @@ function buildCardElement(card, index, options = {}) {
 
   const haveIngredients = card.ingredients.filter((i) => i.have);
   const missIngredients = card.ingredients.filter((i) => !i.have);
-  const showMatchBadge = options.showMatchBadge === true;
+  const showMatchBadge = options.showMatchBadge === true && userHadIngredients;
 
   wrap.innerHTML = `
     <div class="card-img-wrap">
