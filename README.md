@@ -212,6 +212,27 @@ Envisage · Techno Main Salt Lake, Kolkata · April 2026
 
 ---
 
+
+## 👨‍💻 Team
+
+Built with conviction for the **Hack Your Way Hackathon by TMSL, Kolkata**:
+
+<table>
+  <tr>
+    <td align="center">
+      <b>Shumaque Raza</b>
+    </td>
+    <td align="center">
+      <b>Anirban Goswami</b>
+    </td>
+    <td align="center">
+      <b>Anshuman Kumar Singh</b>
+    </td>
+  </tr>
+</table>
+
+---
+
 ## 📄 License
 
 MIT — cook whatever you want with this code.  
