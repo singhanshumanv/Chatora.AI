@@ -1,7 +1,43 @@
 // ─── State ────────────────────────────────────────────────────────────────────
 let currentCards = [];
-let currentView = "input"; // input | cards | full
-let activeTab = "search";  // search | saved
+let currentView = "input";
+let activeTab = "search";
+
+// ─── Loading Texts ──────────────────────────────────────────────────────────
+const loadingTexts = [
+  "Searching for the perfect recipe...",
+  "Consulting the chef...",
+  "Preheating the oven...",
+  "Mixing ingredients...",
+  "Finding your flavor match...",
+  "Calculating spices...",
+  "Chopping vegetables...",
+  "Simmering ideas...",
+  "Tasting possibilities...",
+  "Seasoning to perfection...",
+  "Whipping up suggestions...",
+  "Plating your options...",
+];
+
+let loadingInterval = null;
+
+function startLoadingTextCycle() {
+  const textEl = document.getElementById("loading-text");
+  let index = 0;
+  textEl.textContent = loadingTexts[0];
+  
+  loadingInterval = setInterval(() => {
+    index = (index + 1) % loadingTexts.length;
+    textEl.textContent = loadingTexts[index];
+  }, 1500);
+}
+
+function stopLoadingTextCycle() {
+  if (loadingInterval) {
+    clearInterval(loadingInterval);
+    loadingInterval = null;
+  }
+}
 
 // ─── DOM refs ─────────────────────────────────────────────────────────────────
 const views = {
@@ -53,6 +89,10 @@ function bindTabs() {
     Object.values(views).forEach((el) => el.classList.remove("active"));
     savedPanel.classList.remove("hidden");
     await renderSavedRecipes();
+  });
+
+  document.getElementById("saved-search").addEventListener("input", async (e) => {
+    await renderSavedRecipes(e.target.value.trim());
   });
 }
 
@@ -108,7 +148,6 @@ function bindInputForm() {
         saved_at: Date.now(),
         full_recipe: null,
       }));
-      await Promise.all(currentCards.map(saveRecipe));
       renderCards(currentCards);
       showView("cards");
     } catch (err) {
@@ -132,25 +171,26 @@ function renderCards(cards) {
   grid.innerHTML = "";
 
   cards.forEach((card, i) => {
-    const el = buildCardElement(card, i);
+    const el = buildCardElement(card, i, { showMatchBadge: true });
     grid.appendChild(el);
   });
 
   document.getElementById("btn-new-search").onclick = () => showView("input");
 }
 
-function buildCardElement(card, index) {
+function buildCardElement(card, index, options = {}) {
   const wrap = document.createElement("div");
   wrap.className = "recipe-card";
   wrap.style.animationDelay = `${index * 0.08}s`;
 
   const haveIngredients = card.ingredients.filter((i) => i.have);
   const missIngredients = card.ingredients.filter((i) => !i.have);
+  const showMatchBadge = options.showMatchBadge === true;
 
   wrap.innerHTML = `
     <div class="card-img-wrap">
       <img src="${card.thumbnail_url}" alt="${escHtml(card.dish_name)}" loading="lazy" />
-      <span class="match-badge">${card.match_percent}% match</span>
+      ${showMatchBadge ? `<span class="match-badge">${card.match_percent}% match</span>` : ""}
     </div>
     <div class="card-body">
       <h2 class="card-title">${escHtml(card.dish_name)}</h2>
@@ -176,9 +216,11 @@ function buildCardElement(card, index) {
     </div>
   `;
 
-  wrap.querySelector(".btn-generate").addEventListener("click", () =>
-    handleGenerateClick(card)
-  );
+  if (options.attachDefaultHandler !== false) {
+    wrap.querySelector(".btn-generate").addEventListener("click", () =>
+      handleGenerateClick(card)
+    );
+  }
 
   return wrap;
 }
@@ -196,7 +238,14 @@ async function handleGenerateClick(card) {
       dietary_flags: card.dietary_flags || [],
       original_servings: card.original_servings || 1,
     });
-    await updateFullRecipe(card.id, full);
+    
+    const existing = await getRecipe(card.id);
+    if (existing) {
+      await updateFullRecipe(card.id, full);
+    } else {
+      await saveRecipe({ ...card, full_recipe: full });
+    }
+    
     renderFullRecipe(full, card.thumbnail_url, card.id);
     showView("full");
   } catch (err) {
@@ -316,20 +365,36 @@ function macroItem(label, value, unit) {
 }
 
 // ─── Saved Recipes ─────────────────────────────────────────────────────────────
-async function renderSavedRecipes() {
+async function renderSavedRecipes(filter = "") {
   const container = document.getElementById("saved-grid");
   container.innerHTML = `<div class="spinner-wrap"><div class="spinner"></div></div>`;
 
   const recipes = await getAllRecipes();
   container.innerHTML = "";
 
-  if (!recipes.length) {
-    container.innerHTML = `<p class="empty-msg">No saved recipes yet.</p>`;
+  const filtered = recipes.filter((card) => {
+    if (!filter) return true;
+    const search = filter.toLowerCase();
+    return (
+      card.dish_name?.toLowerCase().includes(search) ||
+      card.cuisine?.toLowerCase().includes(search) ||
+      card.ingredients?.some((i) => i.name?.toLowerCase().includes(search))
+    );
+  });
+
+  if (!filtered.length) {
+    container.innerHTML = `<p class="empty-msg">${filter ? "No recipes match your search." : "No saved recipes yet."}</p>`;
     return;
   }
 
-  recipes.forEach((card, i) => {
-    const el = buildCardElement(card, i);
+  filtered.forEach((card, i) => {
+    const displayCard = card.full_recipe ? {
+      ...card,
+      macros: card.full_recipe.macros_per_serving,
+      ingredients: card.full_recipe.scaled_ingredients || [],
+    } : card;
+
+    const el = buildCardElement(displayCard, i, { showMatchBadge: false, attachDefaultHandler: false });
 
     el.querySelector(".btn-generate").addEventListener("click", async () => {
       if (card.full_recipe) {
@@ -353,7 +418,7 @@ async function renderSavedRecipes() {
   document.getElementById("btn-clear-all").onclick = async () => {
     if (!confirm("Clear all saved recipes?")) return;
     await clearAll();
-    await renderSavedRecipes();
+    await renderSavedRecipes(filter);
     showToast("All recipes cleared.");
   };
 }
@@ -361,6 +426,11 @@ async function renderSavedRecipes() {
 // ─── Loading overlay ──────────────────────────────────────────────────────────
 function setLoading(on) {
   document.getElementById("loading-overlay").classList.toggle("visible", on);
+  if (on) {
+    startLoadingTextCycle();
+  } else {
+    stopLoadingTextCycle();
+  }
 }
 
 // ─── Toast ────────────────────────────────────────────────────────────────────

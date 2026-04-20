@@ -9,7 +9,7 @@
 <body>
   <div id="app">
     <header>
-      <span class="logo">Recipe Engine</span>
+      <a href="#" class="logo" onclick="location.reload()"><span class="logo-recipe">Recipe</span> <span class="logo-engine">Engine</span></a>
       <nav class="tabs">
         <button class="tab-btn active" id="tab-search">Search</button>
         <button class="tab-btn" id="tab-saved">My Recipes</button>
@@ -97,7 +97,10 @@
     <div id="saved-panel" class="hidden">
       <div class="saved-header">
         <h2>My Recipes</h2>
-        <button class="btn-danger" id="btn-clear-all">Clear All</button>
+        <div class="saved-controls">
+          <input type="text" id="saved-search" placeholder="Search recipes…" autocomplete="off" />
+          <button class="btn-danger" id="btn-clear-all">Clear All</button>
+        </div>
       </div>
       <div class="cards-grid" id="saved-grid"></div>
     </div>
@@ -106,7 +109,7 @@
   <!-- Loading overlay -->
   <div id="loading-overlay">
     <div class="spinner"></div>
-    <span class="loading-text">Talking to the AI…</span>
+    <span class="loading-text" id="loading-text">Loading...</span>
   </div>
 
   <script src="db.js" defer></script>
