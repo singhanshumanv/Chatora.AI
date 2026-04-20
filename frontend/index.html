@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Recipe Engine</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="app">
+    <header>
+      <span class="logo">Recipe Engine</span>
+      <nav class="tabs">
+        <button class="tab-btn active" id="tab-search">Search</button>
+        <button class="tab-btn" id="tab-saved">My Recipes</button>
+      </nav>
+    </header>
+
+    <!-- View 1 — Input Form -->
+    <div id="view-input" class="view active">
+      <div class="form-card">
+        <h1 class="form-title">What's in your kitchen?</h1>
+        <p class="form-subtitle">Add ingredients or describe a dish — we'll find the best recipes for you.</p>
+
+        <form id="recipe-form" novalidate>
+
+          <div class="form-group">
+            <label>Ingredients</label>
+            <div class="chip-wrap" id="chip-container">
+              <input type="text" id="chip-input" placeholder="Type ingredient and press Enter…" autocomplete="off" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Or describe a dish</label>
+            <textarea id="recipe-text" placeholder="e.g. something spicy and quick with leftover rice…"></textarea>
+          </div>
+
+          <div class="row-2">
+            <div class="form-group">
+              <label>Servings</label>
+              <input type="number" id="servings" value="1" min="1" max="20" />
+            </div>
+            <div class="form-group">
+              <label>Cuisine</label>
+              <select id="cuisine-pref">
+                <option value="">Any cuisine</option>
+                <option value="Indian">Indian</option>
+                <option value="Italian">Italian</option>
+                <option value="Chinese">Chinese</option>
+                <option value="Mexican">Mexican</option>
+                <option value="American">American</option>
+                <option value="Mediterranean">Mediterranean</option>
+                <option value="Japanese">Japanese</option>
+                <option value="Thai">Thai</option>
+                <option value="Middle Eastern">Middle Eastern</option>
+                <option value="Korean">Korean</option>
+                <option value="French">French</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Dietary Preferences</label>
+            <div class="dietary-flags">
+              <label class="flag-label"><input type="checkbox" class="dietary-flag" value="Vegan" /> Vegan</label>
+              <label class="flag-label"><input type="checkbox" class="dietary-flag" value="Vegetarian" /> Vegetarian</label>
+              <label class="flag-label"><input type="checkbox" class="dietary-flag" value="Gluten Free" /> Gluten Free</label>
+              <label class="flag-label"><input type="checkbox" class="dietary-flag" value="Halal" /> Halal</label>
+              <label class="flag-label"><input type="checkbox" class="dietary-flag" value="Keto" /> Keto</label>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-primary">Find Recipes →</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- View 2 — Recipe Cards -->
+    <div id="view-cards" class="view">
+      <div class="cards-header">
+        <h2>Here's what you can make</h2>
+        <button class="btn-ghost" id="btn-new-search">← New Search</button>
+      </div>
+      <div class="cards-grid" id="cards-grid"></div>
+    </div>
+
+    <!-- View 3 — Full Recipe -->
+    <div id="view-full" class="view">
+      <div class="full-back">
+        <button class="btn-ghost" id="btn-back-cards">← Back</button>
+      </div>
+      <div id="full-recipe-content"></div>
+    </div>
+
+    <!-- Saved Panel (replaces all views) -->
+    <div id="saved-panel" class="hidden">
+      <div class="saved-header">
+        <h2>My Recipes</h2>
+        <button class="btn-danger" id="btn-clear-all">Clear All</button>
+      </div>
+      <div class="cards-grid" id="saved-grid"></div>
+    </div>
+  </div>
+
+  <!-- Loading overlay -->
+  <div id="loading-overlay">
+    <div class="spinner"></div>
+    <span class="loading-text">Talking to the AI…</span>
+  </div>
+
+  <script src="db.js" defer></script>
+  <script src="api.js" defer></script>
+  <script src="app.js" defer></script>
+</body>
+</html>
