@@ -31,5 +31,5 @@ function pollinationsUrl(dishName, cuisine) {
     `${dishName} ${cuisine} food photography, overhead shot, dark moody background, professional plating, appetizing`
   );
   // width=400&height=300 for card thumbnails
-  return `https://image.pollinations.ai/prompt/${prompt}?width=400&height=300&nologo=true&seed=${Math.floor(Math.random() * 9999)}`;
+  return `https://image.pollinations.ai/prompt/${prompt}?model=flux&width=800&height=700&nologo=true&seed=${Math.floor(Math.random() * 9999)}&key=pk_ebCkCGPi8nHcaQLZ`;
 }

@@ -27,7 +27,7 @@ client = OpenAI(
     api_key=os.getenv("API_KEY"),
     base_url=os.getenv("BASE_URL"),
 )
-MODEL = os.getenv("MODEL_NAME", "gemini-2.5-flash")
+MODEL = os.getenv("MODEL_NAME")
 
 
 def call_ai(system: str, user: str) -> dict:
